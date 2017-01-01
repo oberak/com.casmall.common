@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sample.dao.EmpDAO">
+    <sql id="select-emp" >
+        SELECT empno, ename
+          FROM emp 
+    </sql>
+    
+    <select id="selectEmpList" resultType="sample.domain.EmpDTO">
+        <include refid="select-emp"/>
+    </select>
+    
+    <select id="selectEmpByKey" resultType="sample.domain.EmpDTO">
+        <include refid="select-emp"/>
+        <where> 
+            <if test="empno != 0"> 
+               empno = #{empno}
+            </if>
+        </where>
+    </select>
+    <insert id="insertEmp">
+        INSERT INTO emp (empno, ename)
+             VALUES (#{empno},#{ename})
+    </insert>
+    <update id="updateEmp">
+        UPDATE emp 
+           SET ename = #{ename}
+         WHERE empno = #{empno}
+    </update>
+    
+    <delete id="deleteEmp">
+        DELETE FROM emp
+              WHERE empno = #{empno}
+    </delete>
+</mapper>

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.casmall.biz.dao.CommonDAO">
+
+    <!-- 전문정보 1:N resultMap -->
+    <resultMap id="cmMsgResult" type="com.casmall.biz.domain.CmMsgDTO">
+        <id property="msg_id" column="msg_id"/>
+        <result property="stt_char" column="stt_char"/>
+        <result property="end_char" column="end_char"/>
+        <result property="msg_tot_len" column="msg_tot_len"/>
+        
+        <association property="attrList" column="attr_msg_id" resultMap="cmMsgAttrResult"/>
+    </resultMap>
+    
+    <resultMap id="cmMsgAttrResult" type="com.casmall.biz.domain.CmMsgAttrDTO">
+            <id property="msg_id" column="attr_msg_id"/>
+            <id property="attr_seq" column="attr_seq"/>
+            <result property="ttr_prior" column="ttr_prior"/>
+            <result property="attr_nm" column="attr_nm"/>
+            <result property="stt_pos" column="stt_pos"/>
+            <result property="attr_len" column="attr_len"/>
+            <result property="attr_type_cd" column="attr_type_cd"/>
+    </resultMap>
+        
+    <!-- 전문 정보 조회 -->
+    <select id="selectCmMsg" resultMap="cmMsgResult">
+        SELECT m.msg_id, m.stt_char, m.end_char, m.msg_tot_len, 
+               ma.msg_id AS attr_msg_id, ma.attr_seq, ma.attr_prior, ma.attr_nm, ma.stt_pos, 
+               ma.attr_len, ma.attr_type_cd
+          FROM CM_MSG m
+               INNER JOIN cm_msg_attr ma ON m.msg_id = ma.msg_id
+         WHERE m.del_yn = 'N'
+           AND ma.del_yn = 'N'
+         ORDER BY m.msg_id, ma.attr_prior
+    </select>
+    
+    <!-- 전문정보 수정 -->
+    <update id="updateCmMsg" parameterType="com.casmall.biz.domain.CmOsMcDTO">
+        UPDATE CM_MSG
+           SET stt_char = #{stt_char},
+               end_char = #{end_char}, 
+               msg_tot_len = #{msg_tot_len}, 
+               edt_dt = #{edt_dt},
+               edt_id = #{edt_id}
+         WHERE msg_id = #{msg_id}
+    </update>
+    
+    <update id="updateCmMsgAttr" parameterType="com.casmall.biz.domain.CmOsMcDTO">
+        UPDATE CM_MSG_ATTR
+           SET attr_prior = #{attr_prior},
+               attr_nm = #{attr_nm}, 
+               stt_pos = #{stt_pos}, 
+               attr_len = #{attr_len}, 
+               attr_type_cd = #{attr_type_cd}, 
+               edt_dt = #{edt_dt},
+               edt_id = #{edt_id}
+         WHERE msg_id = #{msg_id}
+           AND attr_seq = #{attr_seq}
+    </update>
+    
+    <!-- 외부 기기 정보 조회 -->
+	<select id="selectCmOsMc" parameterType="String" resultType="com.casmall.biz.domain.CmOsMcDTO">
+		SELECT mc_id, mc_nm, port_nm, baud_rate, data_bits,
+			   parity_bits, stop_bits, port_open_wait_time, read_buff_size, read_wait_time,
+			   read_retry_cnt, del_yn, rgn_dt, rgn_id, edt_dt,
+			   edt_id, svr_trn_dt
+		  FROM cm_os_mc 
+         WHERE del_yn = 'N'
+        <if test="mc_id != null "> 
+           AND mc_id = #{mc_id}
+        </if>
+    </select>
+    
+    <update id="updateCmOsMc" parameterType="com.casmall.biz.domain.CmOsMcDTO">
+        UPDATE cm_os_mc
+           SET mc_nm = #{mc_nm},
+               port_nm = #{port_nm}, 
+               baud_rate = #{baud_rate}, 
+               data_bits = #{data_bits},
+               parity_bits = #{parity_bits}, 
+               stop_bits = #{stop_bits}, 
+               port_open_wait_time = #{port_open_wait_time}, 
+               read_buff_size = #{read_buff_size}, 
+               read_wait_time = #{read_wait_time},
+               read_retry_cnt = #{read_retry_cnt}, 
+               edt_dt = #{edt_dt},
+               edt_id = #{edt_id}
+         WHERE mc_id = #{mc_id}
+    </update>
+    
+    <!-- 공통코드 조회 -->
+    <select id="selectCmCd" parameterType="com.casmall.biz.domain.CmCdDTO" resultType="com.casmall.biz.domain.CmCdDTO">
+        SELECT cd_id, cd_val, cd_nm, mark_prior
+          FROM cm_cd
+        <where>
+	        <if test="cd_id != null "> 
+	           AND cd_id = #{cd_id}
+	        </if>
+	        <if test="cd_val != null "> 
+               AND cd_val &lt;= #{cd_val}
+            </if>
+        </where>
+        ORDER BY mark_prior
+    </select>
+    
+    <!-- 공통코드 상세 update -->
+    <update id="updateCmCd" parameterType="com.casmall.biz.domain.CmCdDTO">
+        UPDATE cm_cd
+           SET cd_nm = #{cd_nm} 
+         WHERE cd_id = #{cd_id}
+           AND cd_val = #{cd_val}
+    </update>
+</mapper>

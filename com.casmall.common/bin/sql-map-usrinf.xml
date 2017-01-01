@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.casmall.usr.dao.CmUsrInfDAO">
+    <!-- 회원정보 조회 -->
+    <select id="selectCmUsrInf" parameterType="String" resultType="com.casmall.usr.domain.CmUsrInfDTO">
+        SELECT usr_seq, lgn_id, lgn_pw, usr_nm, tel, 
+               ath_grd,(SELECT cd_nm 
+                          FROM cm_cd cd 
+                         WHERE cd.cd_id = 'ATH_GRD' 
+                           AND cd.cd_val = ui.ath_grd) AS ath_grd_nm, ath_cd, nt, del_yn, 
+               rgn_dt, rgn_id, edt_dt, edt_id, trn_dt
+          FROM cm_usr_inf ui
+      <where>
+        <if test="del_yn != null "> 
+           AND del_yn = #{del_yn}
+        </if>
+        <if test="lgn_id != null "> 
+           AND lgn_id = #{lgn_id}
+        </if>
+        <if test="usr_seq != 0 "> 
+           AND usr_seq = #{usr_seq}
+        </if>
+        <if test="ath_grd != null ">
+           AND ath_grd &lt;= #{ath_grd}
+        </if>
+        <if test="search != null ">
+           AND (lgn_id LIKE '%'||#{search}||'%'
+                OR usr_nm LIKE '%'||#{search}||'%'
+                OR tel LIKE '%'||#{search}||'%'
+                OR nt LIKE '%'||#{search}||'%'
+               )
+        </if>
+      </where>
+    </select>
+    
+    <!-- USR SEQ 채번 -->
+    <select id="selectCmUsrInfKey" resultType="String">
+        SELECT COALESCE(MAX(CAST(usr_seq AS NUMERIC)),0)+1
+          FROM cm_usr_inf
+    </select>
+    
+     <!-- 회원정보 등록 -->
+    <insert id="insertCmUsrInf" parameterType="com.casmall.usr.domain.CmUsrInfDTO">
+        INSERT INTO cm_usr_inf
+               ( usr_seq, lgn_id, lgn_pw, usr_nm, tel, 
+               ath_grd, ath_cd, nt, del_yn, rgn_dt, 
+               rgn_id, edt_dt, edt_id, trn_dt
+        ) VALUES (
+          #{usr_seq}, #{lgn_id}, #{lgn_pw}, #{usr_nm}, #{tel}, 
+          #{ath_grd}, #{ath_cd}, #{nt}, #{del_yn}, #{rgn_dt}, 
+          #{rgn_id}, #{edt_dt}, #{edt_id}, #{trn_dt})
+    </insert>
+    
+    <!-- 회원정보 수정 -->
+    <update id="updateCmUsrInf" parameterType="com.casmall.usr.domain.CmUsrInfDTO">
+        UPDATE cm_usr_inf 
+           SET 
+           <if test="lgn_id != null ">
+               lgn_id = #{lgn_id}, 
+           </if>
+           <if test="lgn_pw != null and lgn_pw !=''">
+               lgn_pw = #{lgn_pw},
+           </if>
+           <if test="usr_nm != null ">
+               usr_nm = #{usr_nm}, 
+           </if>
+           <if test="tel != null ">
+               tel = #{tel}, 
+           </if>
+           <if test="ath_grd != null ">
+               ath_grd = #{ath_grd}, 
+           </if>
+           <if test="ath_cd != null ">
+               ath_cd = #{ath_cd},
+           </if>
+           <if test="nt != null ">
+               nt = #{nt}, 
+           </if>
+           <if test="del_yn != null ">
+               del_yn = #{del_yn},
+           </if>
+           <if test="trn_dt != null ">
+               trn_dt = #{trn_dt}, 
+           </if>
+               edt_dt = #{edt_dt}, 
+               edt_id = #{edt_id}
+         WHERE usr_seq = #{usr_seq}
+    </update>
+</mapper>
